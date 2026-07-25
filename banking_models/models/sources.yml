@@ -1,0 +1,7 @@
+# models/sources.yml
+sources:
+  - name: banking_raw
+    schema: public
+    tables:
+      - name: customers_raw
+      - name: transactions_raw

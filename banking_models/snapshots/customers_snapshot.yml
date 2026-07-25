@@ -1,0 +1,15 @@
+snapshots:
+  - name: customers_snapshot
+    relation: source('banking_raw', 'customers_raw')
+    config:
+      schema: snapshots
+      unique_key: customer_id
+      strategy: check
+      check_cols:
+        - full_name
+        - email
+        - phone
+        - country
+        - account_type
+        - credit_score
+        - is_active

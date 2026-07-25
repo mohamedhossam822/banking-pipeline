@@ -2,3 +2,4 @@ Faker
 psycopg[binary]
 python-dotenv
 pandas
+dbt-postgres

@@ -65,4 +65,19 @@ with DAG(
         """
     )
 
-    t1 >> t2 >> t3
+    t4 = BashOperator(
+        task_id="build_dbt_models",
+        bash_command="""
+        dbt build \
+        --project-dir /opt/airflow/dbt \
+        --profiles-dir /opt/airflow/dbt
+        """
+    )
+    t4.doc_md = textwrap.dedent(
+        """
+        #### Task Documentation
+        This is a task to build the dbt models using the `dbt build` command in the `/opt/airflow/dbt` directory.
+        """
+    )
+
+    t1 >> t2 >> t3 >> t4
