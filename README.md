@@ -1,3 +1,4 @@
+![CI](https://github.com/mohamedhossam822/banking-pipeline/actions/workflows/ci.yml/badge.svg)
 # Banking Data Pipeline
 
 An end-to-end banking data engineering project that simulates a real analytics workflow using **Python, PostgreSQL, Apache Airflow, dbt, and Docker**.
