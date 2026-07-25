@@ -5,7 +5,9 @@ from airflow.providers.standard.operators.bash import BashOperator
 
 from airflow.sdk import DAG
 
-
+doc_md ="""
+    This is a simple banking pipeline DAG that generates synthetic banking data, validates it, and loads it into a database.
+    """  
 
 with DAG(
     "banking_pipeline_dag",
@@ -20,17 +22,8 @@ with DAG(
     catchup=False,
     tags=["pipeline", "banking"],
 ) as dag:
-    dag.doc_md ="""
-    This is a simple banking pipeline DAG that generates synthetic banking data, validates it, and loads it into a database.
-    """  # otherwise, type it like this
-    templated_command = textwrap.dedent(
-        """
-    {% for i in range(5) %}
-        echo "{{ ds }}"
-        echo "{{ macros.ds_add(ds, 7)}}"
-    {% endfor %}
-    """
-    )
+    dag.doc_md =doc_md
+
     # t1, t2 and t3 are examples of tasks created by instantiating operators
     t1 = BashOperator(
         task_id="generate_data",

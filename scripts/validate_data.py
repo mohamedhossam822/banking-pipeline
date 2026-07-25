@@ -62,7 +62,7 @@ def clean_customers_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def clean_transactions_data(df: pd.DataFrame) -> pd.DataFrame:
+def clean_transactions_data(df: pd.DataFrame, valid_customer_ids: set) -> pd.DataFrame:
     # Remove duplicates based on transaction_id, keeping the latest record
     df = df.sort_values(by=["transaction_id", "transaction_date"], ascending=[True, False])
     df = df.drop_duplicates(subset=["transaction_id"], keep="first")
@@ -72,7 +72,8 @@ def clean_transactions_data(df: pd.DataFrame) -> pd.DataFrame:
     df["transaction_date"] = pd.to_datetime(df["transaction_date"], errors="coerce")
 
     #ensure that customer_id in transactions exists in customers
-    df = df[df["customer_id"].isin(df["customer_id"])]
+    df = df[df["customer_id"].isin(valid_customer_ids)]
+
 
     return df
 
@@ -82,11 +83,11 @@ def main() -> None:
     print(f"CUSTOMERS_CSV: {CUSTOMERS_CSV}")
     print(f"TRANSACTIONS_CSV: {TRANSACTIONS_CSV}")
     df=read_data(CUSTOMERS_CSV, CUSTOMERS_COLUMNS)
-    df=clean_customers_data(df)
-    df.to_csv(CLEAN_CUSTOMERS_CSV, index=False)
+    customers_df=clean_customers_data(df)
+    customers_df.to_csv(CLEAN_CUSTOMERS_CSV, index=False)
 
     df=read_data(TRANSACTIONS_CSV, TRANSACTIONS_COLUMNS)
-    df=clean_transactions_data(df)
+    df=clean_transactions_data(df,set(customers_df["customer_id"]))
     df.to_csv(CLEAN_TRANSACTIONS_CSV, index=False)
 
     print(df.head())

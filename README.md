@@ -194,7 +194,7 @@ python scripts/Load_Into_Database.py
 
 ### 4. Run dbt transformations
 
-From داخل the `banking_models/` directory:
+From inside the `banking_models/` directory:
 
 ```bash
 dbt run

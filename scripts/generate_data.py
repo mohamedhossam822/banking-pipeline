@@ -45,24 +45,6 @@ def generate_customers(n: int) -> list[dict]:
     return customers
 
 
-# ── 2. Inject updates (simulates SCD Type 2 changes) ─────────────────────────
-def inject_customer_updates(customers: list[dict]) -> list[dict]:
-    """
-    Take 10% of customers and create a new snapshot row with changed data.
-    This is the pattern you handled in your snapshot unification work —
-    detecting what changed and deciding which record is current.
-    """
-    updated = []
-    for c in customers:
-        updated.append(c)
-        if random.random() < 0.10:                      # 10% get an update
-            new_row = c.copy()
-            new_row["email"]         = fake.email()     # email changed
-            new_row["credit_score"]  = min(850, c["credit_score"] + random.randint(-50, 80))
-            new_row["snapshot_date"] = SNAPSHOT_DATE    # same snapshot, newer record
-            updated.append(new_row)
-    return updated
-
 
 # ── 3. Generate transactions ──────────────────────────────────────────────────
 def generate_transactions(customers: list[dict], n: int) -> list[dict]:
@@ -124,9 +106,8 @@ def main():
 
     # Customers
     customers     = generate_customers(NUM_CUSTOMERS)
-    customers_scd = inject_customer_updates(customers)
-    cust_path     = write_csv(customers_scd, "customers_raw.csv")
-    print(f"[generate_data] Customers written: {len(customers_scd)} rows → {cust_path}")
+    cust_path     = write_csv(customers, "customers_raw.csv")
+    print(f"[generate_data] Customers written: {len(customers)} rows → {cust_path}")
 
     # Transactions
     transactions      = generate_transactions(customers, NUM_TRANSACTIONS)
