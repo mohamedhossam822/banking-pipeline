@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pipeline-test:
+    runs-on: ubuntu-latest
+
+    # Spin up a real Postgres for the duration of this job
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: airflow
+          POSTGRES_PASSWORD: airflow
+          POSTGRES_DB: airflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      DATA_DIR: data
+      CUSTOMERS_CSV: customers_raw.csv
+      TRANSACTIONS_CSV: transactions_raw.csv
+      CLEAN_CUSTOMERS_CSV: clean_customers_raw.csv
+      CLEAN_TRANSACTIONS_CSV: clean_transactions_raw.csv
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── Run the same pipeline steps Airflow would run ─────────────────────
+      - name: Generate synthetic data
+        run: python scripts/generate_data.py
+
+      - name: Validate data
+        run: python scripts/validate_data.py
+
+      - name: Load into Postgres
+        run: python scripts/load_into_database.py
+
+      - name: Run dbt build (run + test + snapshot)
+        working-directory: banking_models
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt build
+
+      - name: Generate dbt docs (optional artifact)
+        working-directory: banking_models
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt docs generate
+
+      - name: Upload dbt artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-artifacts
+          path: banking_models/target/
+          retention-days: 7
